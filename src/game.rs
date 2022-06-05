@@ -74,6 +74,10 @@ impl Game {
             rand::thread_rng().gen_range(self.border.top()..self.border.bottom()) / 25 * 25;
 
         self.apple = Rect::new(x_location, y_location, 25, 25);
+
+        if self.snake.apple_in_body(&self.apple) {
+            self.spawn_apple();
+        }
     }
 
     fn draw_screen(&mut self) {
@@ -82,6 +86,8 @@ impl Game {
 
         self.canvas.set_draw_color(Color::RED);
         self.canvas.fill_rect(self.apple).unwrap();
+        self.canvas.set_draw_color(Color::BLACK);
+        self.canvas.draw_rect(self.apple).unwrap();
 
         self.canvas.set_draw_color(Color::GREEN);
         self.snake.draw(&mut self.canvas);

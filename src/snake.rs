@@ -1,6 +1,7 @@
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::pixels::Color;
 
 pub enum Direction {
     Up,
@@ -72,7 +73,19 @@ impl Snake {
         false
     }
 
+    pub fn apple_in_body(&self, apple: &Rect) -> bool {
+        for segment in &self.body {
+            if segment.contains_rect(*apple) {
+                return true;
+            }
+        }
+
+        false
+    }
+
     pub fn draw(&self, canvas: &mut Canvas<Window>) {
         canvas.fill_rects(&self.body).unwrap();
+        canvas.set_draw_color(Color::BLACK);
+        canvas.draw_rects(&self.body).unwrap();
     }
 }
