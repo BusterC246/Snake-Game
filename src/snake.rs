@@ -1,7 +1,7 @@
+use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
-use sdl2::pixels::Color;
 
 pub enum Direction {
     Up,
@@ -18,7 +18,7 @@ pub struct Snake {
 impl Default for Snake {
     fn default() -> Self {
         Snake {
-            body: vec![Rect::new(300, 300, 25, 25)],
+            body: vec![Rect::new(300, 300, 25, 25), Rect::new(300, 325, 25, 25)],
             direction: Direction::Up,
         }
     }
@@ -42,18 +42,9 @@ impl Snake {
     }
 
     pub fn add_segment(&mut self) {
-        let mut x_offset = 0;
-        let mut y_offset = 0;
-
-        match self.direction {
-            Direction::Up => y_offset = 25,
-            Direction::Down => y_offset = -25,
-            Direction::Left => x_offset = -25,
-            Direction::Right => x_offset = 25,
-        }
         self.body.push(Rect::new(
-            self.body.last().unwrap().x() + x_offset,
-            self.body.last().unwrap().y() + y_offset,
+            self.body.last().unwrap().x(),
+            self.body.last().unwrap().y(),
             25,
             25,
         ));
