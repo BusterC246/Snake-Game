@@ -20,8 +20,8 @@ pub struct Game {
 impl Game {
     pub fn new(canvas: Canvas<Window>, event_pump: EventPump) -> Self {
         let window = canvas.window();
-        let border_x: i32 = (window.drawable_size().0 / 4).try_into().unwrap();
-        let border_y: i32 = (window.drawable_size().1 / 12).try_into().unwrap();
+        let border_x: i32 = (window.drawable_size().0 / 2 - 250) as i32;
+        let border_y: i32 = (window.drawable_size().1 / 2 - 250) as i32;
 
         Game {
             canvas,
@@ -41,6 +41,10 @@ impl Game {
                 Color::RED => {
                     self.snake.add_segment();
                     self.spawn_apple();
+
+                    if self.snake.apple_in_body(&self.apple) {
+                        self.spawn_apple();
+                    }
                 }
                 Color::WHITE => break,
                 Color::GREEN => break,
@@ -74,10 +78,6 @@ impl Game {
             rand::thread_rng().gen_range(self.border.top()..self.border.bottom()) / 25 * 25;
 
         self.apple = Rect::new(x_location, y_location, 25, 25);
-
-        if self.snake.apple_in_body(&self.apple) {
-            self.spawn_apple();
-        }
     }
 
     fn draw_screen(&mut self) {
