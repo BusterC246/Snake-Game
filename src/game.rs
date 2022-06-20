@@ -56,7 +56,7 @@ impl Game {
         }
 
         self.snake = Snake::default();
-        self.apple = Rect::new(450, 450, 25, 25);
+        self.spawn_apple();
     }
 
     fn check_collisions(&self) -> Color {
@@ -89,8 +89,7 @@ impl Game {
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.draw_rect(self.apple).unwrap();
 
-        self.canvas.set_draw_color(Color::GREEN);
-        self.snake.draw(&mut self.canvas);
+        self.snake.draw(&mut self.canvas).unwrap();
 
         self.canvas.set_draw_color(Color::WHITE);
         self.canvas.draw_rect(self.border).unwrap();
