@@ -1,11 +1,9 @@
-pub mod game;
 pub mod snake;
-pub mod newsnake;
 pub mod logic;
 pub mod render;
 
 use std::time::Duration;
-use newsnake::Direction;
+use snake::Direction;
 use sdl2::{event::Event, keyboard::Keycode, EventPump};
 
 fn main() {
@@ -28,13 +26,14 @@ fn main() {
     loop {
         if let Some(direction) = process_input(&mut event_pump) {
             game.set_snake_direction(direction);
-            // break;
         }
 
-        if let Ok(grid) = game.compute() {
+        if let Some(grid) = game.compute() {
             if let Result::Err(error) = screen.draw_screen(grid) {
                 eprintln!("{}", error);
             }
+        } else {
+            break;
         }
 
         std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 10));

@@ -1,64 +1,59 @@
 use std::collections::VecDeque;
-use sdl2::pixels::Color;
-use sdl2::rect::Rect;
-use sdl2::render::Canvas;
-use sdl2::video::Window;
 
 pub enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+    North,
+    South,
+    East,
+    West,
 }
 
 pub struct Snake {
-    body: VecDeque<Rect>,
-    pub direction: Direction,
+    body: VecDeque<(usize, usize)>,
+    direction: Direction,
 }
 
 impl Default for Snake {
     fn default() -> Self {
         Snake {
-            body: VecDeque::from([
-                Rect::new(300, 300, 25, 25), 
-                Rect::new(300, 325, 25, 25)
-            ]),
-            direction: Direction::Up,
+            body: VecDeque::from([(4, 3), (5, 3), (6, 3)]),
+            direction: Direction::North,
         }
     }
 }
 
 impl Snake {
-    pub fn offset(&mut self) {
-        let mut tail = self.body.pop_back().unwrap();
-        tail.reposition(self.body.front().unwrap().top_left());
-
-        self.body.push_front(tail);
+    pub fn offset(&mut self) -> Result<(), &'static str> {
+        let mut x_offset: isize = 0;
+        let mut y_offset: isize  = 0;
 
         match self.direction {
-            Direction::Up => self.body.front_mut().unwrap().offset(0, -25),
-            Direction::Down => self.body.front_mut().unwrap().offset(0, 25),
-            Direction::Left => self.body.front_mut().unwrap().offset(-25, 0),
-            Direction::Right => self.body.front_mut().unwrap().offset(25, 0),
+            Direction::North => y_offset = -1,
+            Direction::South => y_offset = 1,
+            Direction::East => x_offset = 1,
+            Direction::West => x_offset = -1,
         }
+
+        self.body.pop_back().unwrap();
+        
+        let new_front = if self.body.front().unwrap().0 as isize + y_offset >= 0 || self.body.front().unwrap().1 as isize + x_offset >= 0 {
+            ((self.body.front().unwrap().0 as isize + y_offset) as usize, (self.body.front().unwrap().1 as isize + x_offset) as usize)
+        } else {
+            return Err("Out of bounds.");
+        };
+
+        self.body.push_front(new_front);
+
+        Ok(())
     }
 
     pub fn add_segment(&mut self) {
-        self.body.push_back(Rect::new(
-            self.body.back().unwrap().x(),
-            self.body.back().unwrap().y(),
-            25,
-            25,
-        ));
+        let new_segment = *self.body.back().unwrap();
+        self.body.push_back(new_segment);
     }
 
-    pub fn head(&self) -> Rect {
-        *self.body.front().unwrap()
-    }
-
-    pub fn has_body_collided(&self) -> bool {
+    pub fn in_body(&self, y: usize, x: usize) -> bool {
         for segment in self.body.range(1..) {
-            if self.body.front().unwrap().contains_rect(*segment) {
+            if y == segment.0 && x == segment.1 {
                 return true;
             }
         }
@@ -66,24 +61,28 @@ impl Snake {
         false
     }
 
-    pub fn apple_in_body(&self, apple: &Rect) -> bool {
-        for segment in &self.body {
-            if segment.contains_rect(*apple) {
-                return true;
+    pub fn set_direction(&mut self, direction: Direction) {
+        match direction {
+            Direction::North => {
+                if let Direction::South = self.direction {}
+                else { self.direction = Direction::North }
+            }
+            Direction::South => {
+                if let Direction::North = self.direction {}
+                else { self.direction = Direction::South }
+            }
+            Direction::East => {
+                if let Direction::West = self.direction {}
+                else { self.direction = Direction::East }
+            }
+            Direction::West => {
+                if let Direction::East = self.direction {}
+                else { self.direction = Direction::West }
             }
         }
-
-        false
     }
 
-    pub fn draw(&self, canvas: &mut Canvas<Window>) -> Result<(), String> {
-        for segment in &self.body {
-            canvas.set_draw_color(Color::GREEN);
-            canvas.fill_rect(*segment)?;
-            canvas.set_draw_color(Color::BLACK);
-            canvas.draw_rect(*segment)?;
-        }
-
-        Ok(())
+    pub fn get_body(&self) -> &VecDeque<(usize, usize)> {
+        &self.body
     }
 }

@@ -1,4 +1,4 @@
-use crate::newsnake::{Snake, Direction};
+use crate::snake::{Snake, Direction};
 use rand::prelude::*;
 
 pub struct Game {
@@ -10,7 +10,7 @@ pub struct Game {
 impl Default for Game {
     fn default() -> Self {
         Game {
-            grid: vec![vec![0; 24]; 24],
+            grid: vec![vec![0; 32]; 24],
             snake: Snake::default(),
             apple: (5, 7),
         }
@@ -18,13 +18,15 @@ impl Default for Game {
 }
 
 impl Game {
-    pub fn compute(&mut self) -> Result<&Vec<Vec<u8>>, &'static str> {
-        if let Err(error) = self.snake.offset() {
-            return Err(error);
+    pub fn compute(&mut self) -> Option<&Vec<Vec<u8>>> {
+        if self.snake.offset().is_err() {
+            return None;
         }
 
         for segment in self.snake.get_body() {
-            if segment.0 >= self.grid.len() || segment.1 >= self.grid[0].len() {}
+            if segment.0 >= self.grid.len() || segment.1 >= self.grid[0].len() {
+                return None;
+            }
         }
 
         if self.snake.in_body(self.apple.0, self.apple.1) {
@@ -32,9 +34,17 @@ impl Game {
             self.spawn_apple();
         }
 
+        let head = self.snake.get_body().front().unwrap();
+
+        for segment in self.snake.get_body().range(1..) {
+            if head == segment {
+                return None;
+            }
+        }
+
         self.put_into_grid();
 
-        Ok(&self.grid)
+        Some(&self.grid)
     }
 
     fn put_into_grid(&mut self) {
@@ -47,7 +57,7 @@ impl Game {
                 let mut unchanged = true;
 
                 for segment in self.snake.get_body() {
-                    if segment.0 == y && segment.1 == x {
+                    if *segment == (y, x) {
                         self.grid[y][x] = 1;
                         unchanged = false;
                     }
